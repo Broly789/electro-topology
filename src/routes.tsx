@@ -5,6 +5,8 @@ import Login from "./pages/Login";
 import AuthRoute from "./AuthRoute";
 import PublicRoute from "./pages/PublicRoute";
 import RootLayout from "./layouts/RootLayout";
+import EditorPage from "./pages/Editor";
+import BaseLayout from "./layouts/BaseLayout";
 
 const router = createBrowserRouter([
   // ✅ 需要登录的页面
@@ -17,6 +19,15 @@ const router = createBrowserRouter([
           { index: true, element: <EditPage /> },
           { path: "list", element: <ListPage /> },
         ],
+      },
+    ],
+  },
+  {
+    element: <AuthRoute />,
+    children: [
+      {
+        element: <BaseLayout />,
+        children: [{ path: "editor", element: <EditorPage /> }],
       },
     ],
   },

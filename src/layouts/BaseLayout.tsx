@@ -1,7 +1,7 @@
 import { Outlet, NavLink } from "react-router-dom";
 import { Layout } from "antd";
 
-const { Header, Sider, Footer, Content } = Layout;
+const { Header, Content } = Layout;
 
 const headerStyle: React.CSSProperties = {
   textAlign: "center",
@@ -17,30 +17,21 @@ const layoutStyle = {
   borderRadius: 8,
   overflow: "hidden",
   minHeight: "100vh", // 让布局至少占满视口高度
+  display: "flex",
+  flexDirection: "column",
 };
 
 const contentStyle: React.CSSProperties = {
   textAlign: "center",
-  // color: "#fff",
-  // backgroundColor: "#0958d9",
-  // 移除 flex 相关，使用最简单的方式
-};
-
-const siderStyle: React.CSSProperties = {
-  textAlign: "center",
-  lineHeight: "120px",
-  color: "#fff",
-  backgroundColor: "#1677ff",
-};
-
-const footerStyle: React.CSSProperties = {
-  textAlign: "center",
-  color: "#fff",
-  backgroundColor: "#4096ff",
+  width: "100%",
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+  flex: 1,
 };
 
 // 公共布局：所有后台页面共用 头部/侧边栏
-export default function RootLayout() {
+export default function BaseLayout() {
   return (
     <Layout style={layoutStyle}>
       <Header style={headerStyle}>
@@ -78,16 +69,10 @@ export default function RootLayout() {
         </nav>
       </Header>
       <Layout>
-        <Sider width="25%" style={siderStyle}>
-          Sider
-        </Sider>
         <Content style={contentStyle}>
           {/* 主内容区 → 子页面在这里渲染！ */}
           <Outlet />
         </Content>
-        {/*<Sider width="25%" style={siderStyle}>
-          Sider
-        </Sider>*/}
       </Layout>
       {/*<Footer style={footerStyle}>Footer</Footer>*/}
     </Layout>
