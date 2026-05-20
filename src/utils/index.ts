@@ -1,4 +1,5 @@
 import type { ReactFlowState } from "@xyflow/react";
+import { useSyncExternalStore } from "react";
 import { ElectricalComponentType } from "../types";
 
 export const zoomSelector = (s: ReactFlowState) => s.transform[2] >= 0.7;
@@ -40,4 +41,29 @@ export function getUnit(type: ElectricalComponentType) {
     }
   }
   return unit;
+}
+
+type SystemTheme = "dark" | "light";
+
+// 1. 订阅函数：监听主题变化
+const subscribe = (callback: () => void) => {
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  mq.addEventListener("change", callback);
+  return () => mq.removeEventListener("change", callback);
+};
+
+// 2. 获取客户端当前系统主题
+const getSnapshot = (): SystemTheme => {
+  if (typeof window === "undefined") return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+};
+
+// 3. SSR 服务端默认值
+const getServerSnapshot = (): SystemTheme => "light";
+
+// 对外暴露自定义Hook
+export function useSystemTheme(): SystemTheme {
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
