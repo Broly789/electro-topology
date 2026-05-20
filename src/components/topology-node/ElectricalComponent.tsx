@@ -7,6 +7,7 @@ import Bulb from "@/icons/Bulb";
 import Inductor from "@/icons/Inductor";
 import Battery from "@/icons/Battery";
 import { getUnit } from "@/utils/";
+import TerminalHandle from "./TerminalHandle";
 
 type ElectricalComponentNode = Node<ElectricalComponentData, "string">;
 
@@ -22,8 +23,8 @@ const ElectricalComponent = ({
       <Text fontSize="sm" position="absolute">
         {value} {unit}
       </Text>
-      <Handle type="source" position={Position.Right} id="right" />
-      <Handle type="source" position={Position.Left} id="left" />
+      <TerminalHandle type="source" position={Position.Right} id="right" />
+      <TerminalHandle type="source" position={Position.Left} id="left" />
     </Box>
   );
 };

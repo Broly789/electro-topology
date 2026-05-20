@@ -1,4 +1,12 @@
 @import "tailwindcss";
+/*  handle 连接时根据效验状态颜色控制 */
+.react-flow__handle.connectingto {
+    background-color: red;
+}
+
+.react-flow__handle.valid {
+    background-color: lightseagreen;
+}
 
 :root {
     --text: #6b6375;

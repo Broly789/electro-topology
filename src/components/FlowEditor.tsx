@@ -6,17 +6,22 @@ import {
   addEdge,
   Background,
   Controls,
+  BackgroundVariant,
+  ConnectionMode,
+  MarkerType,
   type Node,
   type Edge,
+  type Connection,
   type OnNodesChange,
   type OnEdgesChange,
   type OnConnect,
   type DefaultEdgeOptions,
-  BackgroundVariant,
-  ConnectionMode,
 } from "@xyflow/react";
+
+import ConnectionLine from "@/components/topology-node/ConnectionLine";
+import { v4 as uuid } from "uuid";
 import { ElectricalComponentType } from "@/types";
-import { nodeTypes } from "./topology-node/register";
+import { nodeTypes, edgeTypes } from "./topology-node/register";
 import "@xyflow/react/dist/style.css";
 
 const initialNodes: Node[] = [
@@ -39,14 +44,21 @@ const initialNodes: Node[] = [
     type: "electricalComponent",
   },
 ];
-const initialEdges: Edge[] = [{ id: "n1-n2", source: "1", target: "2" }];
+// const initialEdges: Edge[] = [{ id: "n1-n2", source: "1", target: "2" }];
+const initialEdges: Edge[] = [];
 
 export default function FlowEditor() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
   const defaultEdgeOptions: DefaultEdgeOptions = {
-    animated: true,
+    // animated: true,
   };
+
+  const isValidConnection = useCallback((connection: Connection | Edge) => {
+    const { source, target } = connection;
+    if (source === target) return false;
+    return true;
+  }, []);
   const onNodesChange: OnNodesChange = useCallback(
     (changes) =>
       setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
@@ -60,7 +72,27 @@ export default function FlowEditor() {
   const onConnect: OnConnect = useCallback(
     (params) =>
       setEdges((edgesSnapshot) =>
-        addEdge({ ...params, type: "customEdge" }, edgesSnapshot),
+        addEdge(
+          {
+            ...params,
+            id: uuid(),
+            type: "wire",
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              width: 20,
+              height: 20,
+              color: "#ffc300",
+            },
+            // markerStart: {
+            //   type: MarkerType.ArrowClosed, // 也使用封闭箭头
+            //   orient: "auto-start-reverse", // 起点箭头方向自动翻转
+            //   color: "#ffc300",
+            //   width: 20,
+            //   height: 20,
+            // },
+          },
+          edgesSnapshot,
+        ),
       ),
     [],
   );
@@ -73,12 +105,15 @@ export default function FlowEditor() {
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       connectionMode={ConnectionMode.Loose}
+      edgeTypes={edgeTypes}
       nodeTypes={nodeTypes}
+      connectionLineComponent={ConnectionLine}
       fitView
       defaultEdgeOptions={defaultEdgeOptions}
       proOptions={{
         hideAttribution: true,
       }}
+      isValidConnection={isValidConnection}
     >
       <Controls />
       <Background
