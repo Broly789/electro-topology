@@ -6,6 +6,9 @@ export enum ElectricalComponentType {
   Battery = "battery",
   Board = "board",
 }
+
+export type ElectricalComponentKeysType =
+  (typeof ElectricalComponentType)[keyof typeof ElectricalComponentType];
 // 手动提取需要的部分
 export const ELECTRICAL_COMPONENTS = [
   ElectricalComponentType.Resistor,
@@ -16,11 +19,16 @@ export const ELECTRICAL_COMPONENTS = [
 export type ElectricalPartialComponentType =
   (typeof ELECTRICAL_COMPONENTS)[number];
 
+export enum ElectricalComponentState {
+  Add = "add",
+  NotAdd = "not-add",
+}
+
 export type ElectricalComponentData = {
   value?: number;
   type?: ElectricalComponentType;
-  // rotation?: number;
-  // state?: ElectricalComponentState;
+  rotation?: number;
+  state?: ElectricalComponentState;
   // isAttachedToGroup?: boolean;
   // visible?: boolean;
   // connectable?: boolean;

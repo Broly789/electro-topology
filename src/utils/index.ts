@@ -1,6 +1,9 @@
 import type { ReactFlowState } from "@xyflow/react";
 import { useSyncExternalStore } from "react";
-import { ElectricalComponentType } from "../types";
+import {
+  ElectricalComponentType,
+  type ElectricalComponentKeysType,
+} from "../types";
 
 export const zoomSelector = (s: ReactFlowState) => s.transform[2] >= 0.7;
 
@@ -16,7 +19,7 @@ export const isPointInBox = (
   );
 };
 
-export function getUnit(type: ElectricalComponentType) {
+export function getUnit(type: ElectricalComponentKeysType) {
   let unit;
   switch (type) {
     case ElectricalComponentType.Resistor: {
