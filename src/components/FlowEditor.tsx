@@ -4,6 +4,7 @@ import { useTheme } from "ahooks";
 import ComponentDetail from "./ComponentDetail";
 import { COMPONENTS } from "@/constants";
 import { isPointInBox, zoomSelector } from "@/utils";
+import useKeyBinding from "@/hooks/useKeyBinding";
 
 import {
   ELECTRICAL_COMPONENTS,
@@ -37,12 +38,17 @@ import {
   type DefaultEdgeOptions,
   type OnReconnect,
   type OnNodeDrag,
+  type ReactFlowInstance,
 } from "@xyflow/react";
 import ConnectionLine from "@/components/topology-node/ConnectionLine";
 import { v4 as uuid } from "uuid";
 
 import { nodeTypes, edgeTypes } from "./topology-node/register";
 import "@xyflow/react/dist/style.css";
+import { Floppy } from "react-bootstrap-icons";
+import { useData } from "@/api/useData";
+import { useUpdateData } from "@/api/useUpdateData";
+import DownloadBtn from "@/components/DownloadBtn";
 
 const initialNodes: Node[] = [
   {
@@ -64,7 +70,6 @@ const initialNodes: Node[] = [
     type: "electricalComponent",
   },
 ];
-// const initialEdges: Edge[] = [{ id: "n1-n2", source: "1", target: "2" }];
 const initialEdges: Edge[] = [];
 
 export default function FlowEditor() {
@@ -79,18 +84,21 @@ export default function FlowEditor() {
     if (source === target) return false;
     return true;
   }, []);
+
   const onNodesChange: OnNodesChange = useCallback(
     (changes) =>
       setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
     [],
   );
+
   const onEdgesChange: OnEdgesChange = useCallback(
     (changes) =>
       setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
     [],
   );
   const { theme } = useTheme();
-  const { screenToFlowPosition, getIntersectingNodes } = useReactFlow();
+  const { screenToFlowPosition, getIntersectingNodes, setViewport } =
+    useReactFlow();
   const onConnect: OnConnect = useCallback(
     (params) =>
       setEdges((edgesSnapshot) =>
@@ -249,8 +257,10 @@ export default function FlowEditor() {
     }
   };
 
+  useKeyBinding();
+
   const showContent = useStore(zoomSelector);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   useEffect(() => {
     startTransition(() => {
       setNodes((prevNodes) =>
@@ -328,7 +338,7 @@ export default function FlowEditor() {
         return prevNodes.map((node) => {
           if (node.id === dragNode.id) {
             const { x: px, y: py } = parentNode?.position || { x: 0, y: 0 };
-            const { x: dx, y: dy } = dragNode.position || { x: 0, y: 0 };
+            const { x: dx, y: dy } = dragNode?.position || { x: 0, y: 0 };
             return {
               ...node,
               parentId: undefined,
@@ -436,6 +446,32 @@ export default function FlowEditor() {
     }
   };
 
+  const { data: reactFlowState } = useData();
+
+  useEffect(() => {
+    if (reactFlowState) {
+      const {
+        nodes,
+        edges,
+        viewport = { x: 0, y: 0, zoom: 1 },
+      } = reactFlowState;
+      // 👇 所有 setState 包一层，警告彻底消失
+      startTransition(() => {
+        setNodes(nodes);
+        setEdges(edges);
+        setViewport(viewport);
+      });
+    }
+  }, [reactFlowState, setViewport]);
+
+  const { mutateAsync: updateData, isPending } = useUpdateData();
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
+  const onSave = () => {
+    if (rfInstance) {
+      updateData(rfInstance.toObject());
+    }
+  };
+
   return (
     <Box
       height="100%"
@@ -470,6 +506,7 @@ export default function FlowEditor() {
         </Flex>
       )}
       <ReactFlow
+        onInit={setRfInstance}
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -500,6 +537,21 @@ export default function FlowEditor() {
           className="border border-gray-200 p-4! rounded-lg bg-white w-37"
         >
           <Flex gap={2} direction="column">
+            <div>
+              <Text fontSize="sm">Project</Text>
+              <Flex mt={1} gap={1} flexWrap="wrap">
+                <IconButton
+                  aria-label="Save"
+                  size="xs"
+                  variant={theme === "dark" ? "outline" : "subtle"}
+                  onClick={onSave}
+                  loading={isPending}
+                >
+                  <Floppy />
+                </IconButton>
+                <DownloadBtn />
+              </Flex>
+            </div>
             <div>
               <Text fontSize="sm">Components</Text>
               <Flex mt={1} gap={1} flexWrap="wrap">
