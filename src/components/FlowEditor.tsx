@@ -1,8 +1,10 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect, useTransition } from "react";
 import { Box, Text, Flex, IconButton } from "@chakra-ui/react";
 import { useTheme } from "ahooks";
 import ComponentDetail from "./ComponentDetail";
 import { COMPONENTS } from "@/constants";
+import { isPointInBox, zoomSelector } from "@/utils";
+
 import {
   ELECTRICAL_COMPONENTS,
   ElectricalComponentState,
@@ -25,6 +27,7 @@ import {
   Panel,
   useReactFlow,
   reconnectEdge,
+  useStore,
   type Node,
   type Edge,
   type Connection,
@@ -33,6 +36,7 @@ import {
   type OnConnect,
   type DefaultEdgeOptions,
   type OnReconnect,
+  type OnNodeDrag,
 } from "@xyflow/react";
 import ConnectionLine from "@/components/topology-node/ConnectionLine";
 import { v4 as uuid } from "uuid";
@@ -44,19 +48,19 @@ const initialNodes: Node[] = [
   {
     id: "1",
     position: { x: 100, y: 100 },
-    data: { type: ElectricalComponentType.Resistor, value: 3 },
+    data: { type: ElectricalComponentType.Resistor, value: 1 },
     type: "electricalComponent",
   },
   {
     id: "2",
     position: { x: 200, y: 200 },
-    data: { type: ElectricalComponentType.Capacitor, value: 5 },
+    data: { type: ElectricalComponentType.Capacitor, value: 2 },
     type: "electricalComponent",
   },
   {
     id: "3",
     position: { x: 300, y: 300 },
-    data: { type: ElectricalComponentType.Inductor, value: 2 },
+    data: { type: ElectricalComponentType.Inductor, value: 3 },
     type: "electricalComponent",
   },
 ];
@@ -148,10 +152,37 @@ export default function FlowEditor() {
     const type = dragOutsideRef.current;
     if (!type) return;
 
-    const position = screenToFlowPosition({
+    // 计算拖放的画布位置
+    let position = screenToFlowPosition({
       x: event.clientX - NODE_WIDTH,
       y: event.clientY - NODE_HEIGHT,
     });
+
+    // 获取所有电路板，判断当前拖放位置是否在某个板子内
+    const boards = nodes.filter(
+      (node) => node.type === ElectricalComponentType.Board,
+    );
+    const board = boards.find((board) =>
+      isPointInBox(position, {
+        x: board.position.x,
+        y: board.position.y,
+        width: board.measured?.width ?? 0,
+        height: board.measured?.height ?? 0,
+      }),
+    );
+
+    // 如果拖放到板子上，计算相对坐标
+    if (board) {
+      const { x: overlapX = 0, y: overlapY = 0 } = board.position;
+      const { x: dragX = 0, y: dragY = 0 } = position;
+      // 子节点在电路板内部的位置 = 拖拽位置 - 电路板位置
+      position = {
+        x: dragX - overlapX,
+        y: dragY - overlapY,
+      };
+    }
+
+    // 根据类型创建节点
     let node: Node | undefined;
     if (isElectricalComponent(type)) {
       node = {
@@ -159,6 +190,7 @@ export default function FlowEditor() {
         type: "electricalComponent",
         data: { type, value: 3 },
         position,
+        parentId: board?.id,
       };
     } else if (type === ElectricalComponentType.Bulb) {
       node = {
@@ -166,6 +198,7 @@ export default function FlowEditor() {
         type,
         data: { value: 12 },
         position,
+        parentId: board?.id,
       };
     } else if (type === ElectricalComponentType.Battery) {
       node = {
@@ -173,13 +206,24 @@ export default function FlowEditor() {
         type,
         data: { value: 12 },
         position,
+        parentId: board?.id,
+      };
+    } else if (type === ElectricalComponentType.Board) {
+      node = {
+        id: uuid(),
+        type,
+        data: {},
+        style: { width: 180, height: 180 },
+        position,
       };
     }
-    if (node) setNodes((prevNodes) => [...prevNodes, node]);
+
+    if (node) {
+      setNodes((prevNodes) => [...prevNodes, node]);
+    }
   };
   const [selectedNode, setSelectedNode] = useState<Node | undefined>(undefined);
   const onNodeClick = (event: React.MouseEvent<Element>, node: Node) => {
-    console.log(node);
     setSelectedNode(node);
   };
   const onPaneClick = () => {
@@ -205,11 +249,45 @@ export default function FlowEditor() {
     }
   };
 
+  const showContent = useStore(zoomSelector);
+  const [isPending, startTransition] = useTransition();
+  useEffect(() => {
+    startTransition(() => {
+      setNodes((prevNodes) =>
+        prevNodes.map((node) => {
+          if (node.parentId) {
+            return {
+              ...node,
+              draggable: showContent,
+              selectable: showContent,
+              data: {
+                ...node.data,
+                visible: showContent,
+                connectable: showContent,
+              },
+            };
+          }
+          return {
+            ...node,
+            draggable: true,
+            selectable: true,
+            data: {
+              ...node.data,
+              visible: true,
+              connectable: true,
+            },
+          };
+        }),
+      );
+    });
+  }, [showContent]);
+
+  const overlappingNodeRef = useRef<Node<ElectricalComponentData> | null>(null);
   const onNodeDrag = (evt: React.MouseEvent<Element>, dragNode: Node) => {
     const intersectingNode = getIntersectingNodes(
       dragNode,
     )?.[0] as Node<ElectricalComponentData>;
-
+    overlappingNodeRef.current = intersectingNode;
     setNodes((prevNodes) => {
       return prevNodes.map((node) => {
         if (node.id === dragNode.id) {
@@ -230,6 +308,132 @@ export default function FlowEditor() {
         return node;
       });
     });
+  };
+
+  const onNodeDragStop: OnNodeDrag<Node<ElectricalComponentData>> = (
+    event,
+    dragNode,
+  ) => {
+    // 1. 拿到重叠节点（提前 return 防止空值）
+    const overlappingNode = overlappingNodeRef.current;
+    if (
+      !overlappingNode ||
+      (overlappingNode.type !== ElectricalComponentType.Board &&
+        dragNode?.parentId)
+    ) {
+      setNodes((prevNodes) => {
+        const parentNode = prevNodes.find(
+          (node) => node.id === dragNode.parentId,
+        );
+        return prevNodes.map((node) => {
+          if (node.id === dragNode.id) {
+            const { x: px, y: py } = parentNode?.position || { x: 0, y: 0 };
+            const { x: dx, y: dy } = dragNode.position || { x: 0, y: 0 };
+            return {
+              ...node,
+              parentId: undefined,
+              position: {
+                x: px + dx,
+                y: py + dy,
+              },
+            };
+          }
+          return node;
+        });
+      });
+    }
+
+    if (!overlappingNode) return;
+
+    const { id: overlappingNodeId, data: overlapData } = overlappingNode;
+    const { value: overlapVal = 0, type } = overlapData;
+    // 2. 类型校验（不满足直接退出）
+    if (isElectricalComponent(type) && dragNode.data.type === type) {
+      // 3. 开始更新节点
+      setNodes((prevNodes) =>
+        prevNodes
+          .map((node) => {
+            // 只更新重叠的那个节点
+            if (node.id === overlappingNode.id) {
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  value: overlapVal + (dragNode.data.value ?? 0),
+                },
+              };
+            }
+            return node;
+          })
+          // 4. 删除被拖拽的节点
+          .filter((node) => node.id !== dragNode.id),
+      );
+    } else if (overlappingNode.type === ElectricalComponentType.Board) {
+      // 1. 判断：重叠的节点是不是【电路板】
+      // 2. 更新节点列表
+      setNodes((prevNodes) => [
+        overlappingNode, // 3. 把电路板放在【最前面】（层级最高，盖住其他节点）
+        ...prevNodes // 4. 处理剩下的所有节点 先把旧的电路板删掉（避免重复）
+          .filter((node) => node.id !== overlappingNodeId)
+          .map((node) => {
+            // 6. 处理被拖拽的节点
+            // 只修改当前拖拽中的节点
+            if (node.id === dragNode.id) {
+              // 7. 获取拖拽节点的坐标
+              const { x: dragX, y: dragY } = dragNode?.position || {
+                x: 0,
+                y: 0,
+              };
+
+              // 8. 获取电路板的坐标
+              const { x: overlapX, y: overlapY } =
+                overlappingNode?.position || { x: 0, y: 0 };
+
+              // 9. 计算【内部相对坐标】
+              // 子节点在电路板内部的位置 = 拖拽位置 - 电路板位置
+              let position;
+              if (!dragNode.parentId) {
+                position = {
+                  x: dragX - overlapX,
+                  y: dragY - overlapY,
+                };
+              } else if (
+                dragNode.parentId &&
+                dragNode.parentId !== overlappingNodeId
+              ) {
+                const prevParentNode = prevNodes.find(
+                  (node) => node.id === dragNode.parentId,
+                );
+                const { x: px, y: py } = prevParentNode?.position || {
+                  x: 0,
+                  y: 0,
+                };
+
+                position = {
+                  x: dragX + px - overlapX,
+                  y: dragY + py - overlapY,
+                };
+              }
+
+              // 10. 返回更新后的拖拽节点
+              return {
+                ...node,
+                parentId: overlappingNodeId, // 把电路板设为父节点
+                ...((!dragNode.parentId ||
+                  dragNode.parentId !== overlappingNodeId) && { position }), // 只有原本无父节点才更新位置
+                draggable: showContent,
+                selectable: showContent,
+                data: {
+                  ...node.data,
+                  visible: showContent,
+                  connectable: showContent,
+                },
+              };
+            }
+            return node;
+          }),
+      ]);
+    }
   };
 
   return (
@@ -289,6 +493,7 @@ export default function FlowEditor() {
         onReconnectStart={onReconnectStart}
         onReconnectEnd={onReconnectEnd}
         onNodeDrag={onNodeDrag}
+        onNodeDragStop={onNodeDragStop}
       >
         <Panel
           position="top-right"
@@ -329,6 +534,14 @@ export default function FlowEditor() {
           variant={BackgroundVariant.Lines}
           id="2"
         />
+        {/*<svg>
+          <defs>
+            <linearGradient id="wire">
+              <stop offset="0%" stopColor="#ecff02" />
+              <stop offset="100%" stopColor="#f69900" />
+            </linearGradient>
+          </defs>
+        </svg>*/}
       </ReactFlow>
     </Box>
   );

@@ -1,4 +1,9 @@
-import { Position, type Node, type NodeProps } from "@xyflow/react";
+import {
+  Position,
+  useReactFlow,
+  type Node,
+  type NodeProps,
+} from "@xyflow/react";
 import { Box, Text } from "@chakra-ui/react";
 import { type ElectricalComponentData, ElectricalComponentType } from "@/types";
 import Registor from "@/icons/Resistor";
@@ -8,18 +13,28 @@ import { getUnit } from "@/utils/";
 import TerminalHandle from "./TerminalHandle";
 import Rotation from "@/components/Rotation";
 import { ElectricalComponentState } from "@/types";
-import { Plus, X } from "react-bootstrap-icons";
+import { Lock, Plus, Unlock, X } from "react-bootstrap-icons";
 
 type ElectricalComponentNode = Node<ElectricalComponentData, "string">;
 
 const ElectricalComponent = ({
   id,
-  data: { value, type, rotation, state },
+  data: {
+    value,
+    type,
+    rotation,
+    state,
+    isAttachedToGroup,
+    visible,
+    connectable,
+  },
   selected,
+  parentId,
 }: NodeProps<ElectricalComponentNode>) => {
   const unit = getUnit(type!);
   const isAdditionValid = state === ElectricalComponentState.Add;
   const isNotAdditionValid = state === ElectricalComponentState.NotAdd;
+  const { updateNode } = useReactFlow();
   return (
     <Box
       position="relative"
@@ -27,9 +42,26 @@ const ElectricalComponent = ({
         transform: `rotate(${rotation}deg)`,
         ...(isAdditionValid && { backgroundColor: "#58ed58" }),
         ...(isNotAdditionValid && { backgroundColor: "#ff0505" }),
+        visibility: visible ? "visible" : "hidden",
       }}
     >
       <Rotation id={id} selected={selected} />
+      {selected && parentId && (
+        <div
+          className="absolute top-[-20px] -right-1 text-black"
+          onClick={() => {
+            updateNode(id, (prevNode) => ({
+              extent: prevNode.extent === "parent" ? undefined : "parent",
+              data: {
+                ...prevNode.data,
+                isAttachedToGroup: !prevNode.data.isAttachedToGroup,
+              },
+            }));
+          }}
+        >
+          {isAttachedToGroup ? <Lock size={12} /> : <Unlock size={12} />}
+        </div>
+      )}
       {type === ElectricalComponentType.Resistor && <Registor height={24} />}
       {type === ElectricalComponentType.Capacitor && <Capacitor height={24} />}
       {type === ElectricalComponentType.Inductor && <Inductor height={24} />}
@@ -42,8 +74,18 @@ const ElectricalComponent = ({
       {isNotAdditionValid && (
         <X size={16} style={{ position: "absolute", top: -17, right: 2 }} />
       )}
-      <TerminalHandle type="source" position={Position.Right} id="right" />
-      <TerminalHandle type="source" position={Position.Left} id="left" />
+      <TerminalHandle
+        isConnectable={connectable}
+        type="source"
+        position={Position.Right}
+        id="right"
+      />
+      <TerminalHandle
+        isConnectable={connectable}
+        type="source"
+        position={Position.Left}
+        id="left"
+      />
     </Box>
   );
 };

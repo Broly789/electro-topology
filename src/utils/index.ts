@@ -5,7 +5,7 @@ import {
   type ElectricalComponentKeysType,
 } from "../types";
 
-export const zoomSelector = (s: ReactFlowState) => s.transform[2] >= 0.7;
+export const zoomSelector = (s: ReactFlowState) => s.transform[2] >= 1.2;
 
 export const isPointInBox = (
   point: { x: number; y: number },
