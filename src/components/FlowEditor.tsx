@@ -1,10 +1,12 @@
 import { useState, useCallback, useRef, useEffect, useTransition } from "react";
 import { Box, Text, Flex, IconButton } from "@chakra-ui/react";
-import { useTheme } from "ahooks";
 import ComponentDetail from "./ComponentDetail";
 import { COMPONENTS } from "@/constants";
 import { isPointInBox, zoomSelector } from "@/utils";
 import useKeyBinding from "@/hooks/useKeyBinding";
+import { useDarkMode } from "@/store/useDarkMode";
+import { useColorMode } from "@/components/ui/color-mode";
+import { useTheme } from "ahooks";
 
 import {
   ELECTRICAL_COMPONENTS,
@@ -45,7 +47,7 @@ import { v4 as uuid } from "uuid";
 
 import { nodeTypes, edgeTypes } from "./topology-node/register";
 import "@xyflow/react/dist/style.css";
-import { Floppy } from "react-bootstrap-icons";
+import { Floppy, Sun, Moon } from "react-bootstrap-icons";
 import { useData } from "@/api/useData";
 import { useUpdateData } from "@/api/useUpdateData";
 import DownloadBtn from "@/components/DownloadBtn";
@@ -96,7 +98,6 @@ export default function FlowEditor() {
       setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
     [],
   );
-  const { theme } = useTheme();
   const { screenToFlowPosition, getIntersectingNodes, setViewport } =
     useReactFlow();
   const onConnect: OnConnect = useCallback(
@@ -472,6 +473,23 @@ export default function FlowEditor() {
     }
   };
 
+  const { isDark, toggleMode } = useDarkMode();
+  const { setThemeMode } = useTheme();
+
+  const { toggleColorMode, setColorMode, colorMode } = useColorMode();
+
+  const toggleDarkMode = () => {
+    toggleMode();
+    setThemeMode(colorMode === "dark" ? "light" : "dark");
+    toggleColorMode();
+    console.log("toggleDarkMode", colorMode, isDark);
+  };
+
+  useEffect(() => {
+    console.log("colorMode123", colorMode);
+    setColorMode(isDark ? "dark" : "light");
+  }, [isDark, setColorMode]);
+
   return (
     <Box
       height="100%"
@@ -479,6 +497,8 @@ export default function FlowEditor() {
       border="1px solid black"
       position="relative"
     >
+      <div>{isDark}</div>
+
       {selectedNode && (
         <Flex
           position="absolute"
@@ -531,7 +551,26 @@ export default function FlowEditor() {
         onReconnectEnd={onReconnectEnd}
         onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
+        colorMode={isDark ? "dark" : "light"}
       >
+        <Panel position="top-left">
+          {/*<IconButton
+            size="xs"
+            aria-label="theme"
+            colorPalette={isDark ? "blackAlpha" : "orange"}
+            onClick={toggleDarkMode}
+          >
+            {isDark ? <Moon /> : <Sun />}
+          </IconButton>*/}
+          <IconButton
+            onClick={toggleDarkMode}
+            variant={"surface"}
+            colorPalette={isDark ? "blackAlpha" : "orange"}
+            size="sm"
+          >
+            {colorMode === "light" ? <Sun /> : <Moon />}
+          </IconButton>
+        </Panel>
         <Panel
           position="top-right"
           className="border border-gray-200 p-4! rounded-lg bg-white w-37"
@@ -543,12 +582,13 @@ export default function FlowEditor() {
                 <IconButton
                   aria-label="Save"
                   size="xs"
-                  variant={theme === "dark" ? "outline" : "subtle"}
+                  variant={isDark ? "solid" : "subtle"}
                   onClick={onSave}
                   loading={isPending}
                 >
                   <Floppy />
                 </IconButton>
+
                 <DownloadBtn />
               </Flex>
             </div>
@@ -561,7 +601,7 @@ export default function FlowEditor() {
                     size="sm"
                     aria-label={component.label}
                     draggable
-                    variant={theme === "dark" ? "outline" : "subtle"}
+                    variant={isDark ? "solid" : "subtle"}
                     onDragStart={(event: React.DragEvent<HTMLButtonElement>) =>
                       onDragStart(event, component.type)
                     }

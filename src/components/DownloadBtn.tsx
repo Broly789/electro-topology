@@ -7,6 +7,7 @@ import { IconButton } from "@chakra-ui/react";
 import { Download } from "react-bootstrap-icons";
 import { toPng } from "html-to-image";
 import { useCallback, useState } from "react";
+import { useDarkMode } from "@/store/useDarkMode";
 
 // 导出配置（可灵活调整）
 const EXPORT_CONFIG = {
@@ -90,10 +91,13 @@ const DownloadBtn = () => {
     }
   }, [getNodes, loading]);
 
+  const { isDark } = useDarkMode();
+
   return (
     <IconButton
       aria-label="Download Flow"
       size="xs"
+      variant={isDark ? "solid" : "subtle"}
       onClick={handleDownload}
       loading={loading} // 加载状态
       disabled={loading} // 加载中禁用
