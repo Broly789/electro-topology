@@ -8,17 +8,21 @@ import {
 import type { ElectricalComponentData } from "@/types";
 import Placeholder from "../Placeholder";
 import { zoomSelector } from "@/utils";
+import { useDarkMode } from "@/store/useDarkMode";
 
 type Board = Node<ElectricalComponentData, "string">;
 const Board = ({ selected }: NodeProps<Board>) => {
   const showPlaceholder = useStore(zoomSelector);
+
+  const { isDark } = useDarkMode();
+  const color = isDark ? "white" : "black";
   return (
     <Box
-      border="2px solid black"
+      border={`2px solid ${color}`}
       borderRadius="8px"
       height="100%"
       width="100%"
-      {...(selected && { boxShadow: "0 0 10px rgba(0, 0, 0, 0.5)" })}
+      {...(selected && { boxShadow: `0 0 4px ${color}` })}
     >
       {selected && <NodeResizer minWidth={150} minHeight={150} />}
       {!showPlaceholder && <Placeholder />}

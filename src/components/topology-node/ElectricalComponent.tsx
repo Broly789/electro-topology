@@ -14,6 +14,7 @@ import TerminalHandle from "./TerminalHandle";
 import Rotation from "@/components/Rotation";
 import { ElectricalComponentState } from "@/types";
 import { Lock, Plus, Unlock, X } from "react-bootstrap-icons";
+import { useDarkMode } from "@/store/useDarkMode";
 
 type ElectricalComponentNode = Node<ElectricalComponentData, "string">;
 
@@ -35,6 +36,10 @@ const ElectricalComponent = ({
   const isAdditionValid = state === ElectricalComponentState.Add;
   const isNotAdditionValid = state === ElectricalComponentState.NotAdd;
   const { updateNode } = useReactFlow();
+
+  const { isDark } = useDarkMode();
+  const color = isDark ? "white" : "black";
+
   return (
     <Box
       position="relative"
@@ -48,7 +53,7 @@ const ElectricalComponent = ({
       <Rotation id={id} selected={selected} />
       {selected && parentId && (
         <div
-          className="absolute top-[-20px] -right-1 text-black"
+          className={`absolute top-[-20px] -right-1 text-${color}`}
           onClick={() => {
             updateNode(id, (prevNode) => ({
               extent: prevNode.extent === "parent" ? undefined : "parent",
@@ -59,20 +64,38 @@ const ElectricalComponent = ({
             }));
           }}
         >
-          {isAttachedToGroup ? <Lock size={12} /> : <Unlock size={12} />}
+          {isAttachedToGroup ? (
+            <Lock color={color} size={12} />
+          ) : (
+            <Unlock color={color} size={12} />
+          )}
         </div>
       )}
-      {type === ElectricalComponentType.Resistor && <Registor height={24} />}
-      {type === ElectricalComponentType.Capacitor && <Capacitor height={24} />}
-      {type === ElectricalComponentType.Inductor && <Inductor height={24} />}
+      {type === ElectricalComponentType.Resistor && (
+        <Registor color={color} height={24} />
+      )}
+      {type === ElectricalComponentType.Capacitor && (
+        <Capacitor color={color} height={24} />
+      )}
+      {type === ElectricalComponentType.Inductor && (
+        <Inductor color={color} height={24} />
+      )}
       <Text fontSize="xx-small" position="absolute">
         {value} {unit}
       </Text>
       {isAdditionValid && (
-        <Plus size={16} style={{ position: "absolute", top: -17, right: 2 }} />
+        <Plus
+          color={color}
+          size={16}
+          style={{ position: "absolute", top: -17, right: 2 }}
+        />
       )}
       {isNotAdditionValid && (
-        <X size={16} style={{ position: "absolute", top: -17, right: 2 }} />
+        <X
+          color={color}
+          size={16}
+          style={{ position: "absolute", top: -17, right: 2 }}
+        />
       )}
       <TerminalHandle
         isConnectable={connectable}

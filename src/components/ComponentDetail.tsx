@@ -9,7 +9,13 @@ import type {
 } from "@/types";
 import { getUnit } from "@/utils";
 
-const ComponentDetail = ({ node }: { node: Node<ElectricalComponentData> }) => {
+const ComponentDetail = ({
+  isDark,
+  node,
+}: {
+  isDark: boolean;
+  node: Node<ElectricalComponentData>;
+}) => {
   const nodeType = node.data?.type ?? node.type;
   const { updateNodeData } = useReactFlow();
   const unit = getUnit(nodeType as ElectricalComponentKeysType);
@@ -28,7 +34,7 @@ const ComponentDetail = ({ node }: { node: Node<ElectricalComponentData> }) => {
   };
 
   return (
-    <Box _dark={{ bg: "gray.800" }}>
+    <Box _dark={{ bg: isDark ? "white" : "gray.800" }}>
       <Heading fontSize="xs">{nodeType?.toUpperCase()}</Heading>
       <InputGroup mt={2} endAddon={unit}>
         <NumberInput.Root

@@ -1,5 +1,6 @@
 import { Box } from "@chakra-ui/react";
 import type { CSSProperties } from "react";
+import { useDarkMode } from "@/store/useDarkMode";
 
 const cssProps = {
   flex: 1,
@@ -9,6 +10,9 @@ const cssProps = {
 } satisfies CSSProperties;
 
 const Placeholder = () => {
+  const { isDark } = useDarkMode();
+
+  const color = isDark ? "#141414" : "white";
   return (
     <Box
       display="flex"
@@ -18,7 +22,7 @@ const Placeholder = () => {
       p={3}
       height="100%"
       borderRadius="8px"
-      bg="white"
+      bg={color}
       zIndex={1}
     >
       <Box {...cssProps} />

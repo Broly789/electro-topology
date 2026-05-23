@@ -514,7 +514,7 @@ export default function FlowEditor() {
             padding="12px"
             zIndex={1000}
           >
-            <ComponentDetail node={selectedNode} key={selectedNode.id} />
+            <ComponentDetail isDark node={selectedNode} key={selectedNode.id} />
           </Box>
         </Flex>
       )}
@@ -547,14 +547,6 @@ export default function FlowEditor() {
         colorMode={colorMode}
       >
         <Panel position="top-left">
-          {/*<IconButton
-            size="xs"
-            aria-label="theme"
-            colorPalette={isDark ? "blackAlpha" : "orange"}
-            onClick={toggleDarkMode}
-          >
-            {isDark ? <Moon /> : <Sun />}
-          </IconButton>*/}
           <IconButton
             onClick={toggleDarkMode}
             variant={"surface"}
@@ -575,7 +567,7 @@ export default function FlowEditor() {
                 <IconButton
                   aria-label="Save"
                   size="xs"
-                  variant={isDark ? "solid" : "subtle"}
+                  variant={"subtle"}
                   onClick={onSave}
                   loading={isPending}
                 >
@@ -594,7 +586,7 @@ export default function FlowEditor() {
                     size="sm"
                     aria-label={component.label}
                     draggable
-                    variant={isDark ? "solid" : "subtle"}
+                    variant={"subtle"}
                     onDragStart={(event: React.DragEvent<HTMLButtonElement>) =>
                       onDragStart(event, component.type)
                     }

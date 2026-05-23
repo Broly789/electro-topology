@@ -7,14 +7,17 @@ import {
 import { default as BulbIcon } from "@/icons/Bulb";
 import { getUnit } from "@/utils/";
 import TerminalHandle from "./TerminalHandle";
+import { useDarkMode } from "@/store/useDarkMode";
 
 type BulbNode = Node<ElectricalComponentData, ElectricalComponentKeysType>;
 
 const BulbComponent = ({ type, data: { value } }: NodeProps<BulbNode>) => {
   const unit = getUnit(type);
+  const { isDark } = useDarkMode();
+  const color = isDark ? "white" : "black";
   return (
     <Box>
-      <BulbIcon isOn height={64} />
+      <BulbIcon color={color} isOn height={64} />
       <Text fontSize="xx-small" position="absolute">
         {value} {unit}
       </Text>

@@ -7,7 +7,7 @@ import { IconButton } from "@chakra-ui/react";
 import { Download } from "react-bootstrap-icons";
 import { toPng } from "html-to-image";
 import { useCallback, useState } from "react";
-import { useColorMode } from "@/components/ui/color-mode";
+import { useDarkMode } from "@/store/useDarkMode";
 
 // 导出配置（可灵活调整）
 const EXPORT_CONFIG = {
@@ -36,6 +36,8 @@ const downloadImage = (dataUrl: string) => {
 const DownloadBtn = () => {
   const { getNodes } = useReactFlow();
   const [loading, setLoading] = useState(false);
+  const { isDark } = useDarkMode();
+  const color = isDark ? "black" : "white";
 
   // 缓存函数，避免重渲染
   const handleDownload = useCallback(async () => {
@@ -73,7 +75,7 @@ const DownloadBtn = () => {
         width: EXPORT_CONFIG.WIDTH,
         height: EXPORT_CONFIG.HEIGHT,
         // pixelRatio: window.devicePixelRatio * 2, // 高清关键
-        backgroundColor: "#ffffff", // 白底导出，避免透明背景黑边
+        backgroundColor: color, // 白底导出，避免透明背景黑边
         style: {
           width: `${EXPORT_CONFIG.WIDTH}px`,
           height: `${EXPORT_CONFIG.HEIGHT}px`,
@@ -89,16 +91,13 @@ const DownloadBtn = () => {
         setLoading(false);
       }, 800);
     }
-  }, [getNodes, loading]);
-
-  const { colorMode } = useColorMode();
-  const isDark = colorMode === "dark";
+  }, [getNodes, loading, color]);
 
   return (
     <IconButton
       aria-label="Download Flow"
       size="xs"
-      variant={isDark ? "solid" : "subtle"}
+      variant={"subtle"}
       onClick={handleDownload}
       loading={loading} // 加载状态
       disabled={loading} // 加载中禁用
