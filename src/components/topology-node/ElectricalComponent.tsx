@@ -26,7 +26,7 @@ const ElectricalComponent = ({
     rotation,
     state,
     isAttachedToGroup,
-    visible,
+    visible = true,
     connectable,
   },
   selected,
@@ -39,7 +39,6 @@ const ElectricalComponent = ({
 
   const { isDark } = useDarkMode();
   const color = isDark ? "white" : "black";
-
   return (
     <Box
       position="relative"
@@ -99,7 +98,7 @@ const ElectricalComponent = ({
       )}
       <TerminalHandle
         isConnectable={connectable}
-        type="source"
+        type="target"
         position={Position.Right}
         id="right"
       />

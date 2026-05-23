@@ -525,7 +525,7 @@ export default function FlowEditor() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        connectionMode={ConnectionMode.Loose}
+        // connectionMode={ConnectionMode.Loose}
         edgeTypes={edgeTypes}
         nodeTypes={nodeTypes}
         connectionLineComponent={ConnectionLine}

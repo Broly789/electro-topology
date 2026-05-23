@@ -32,7 +32,7 @@ const BatteryComponent = ({
           top: 2,
           left: 39,
         }}
-        type="source"
+        type="target"
         position={Position.Top}
         id="right"
       />

@@ -28,27 +28,27 @@ export const initialNodes: Node[] = [
 
 export const COMPONENTS = [
   {
-    icon: <Resistor />,
+    icon: <Resistor />,  // 电阻器
     type: ElectricalComponentType.Resistor,
     label: "Resistor",
   },
   {
-    icon: <Capacitor height={16} />,
+    icon: <Capacitor height={16} />,  // 电容器
     type: ElectricalComponentType.Capacitor,
     label: "Capacitor",
   },
   {
-    icon: <Inductor height={8} />,
+    icon: <Inductor height={8} />,  // 电感器
     type: ElectricalComponentType.Inductor,
     label: "Inductor",
   },
   {
-    icon: <Battery height={24} />,
+    icon: <Battery height={24} />, // 电池
     type: ElectricalComponentType.Battery,
     label: "Battery",
   },
   {
-    icon: <Bulb color="black" height={24} isOn />,
+    icon: <Bulb color="black" height={24} isOn />, // 灯泡
     type: ElectricalComponentType.Bulb,
     label: "Bulb",
   },
@@ -59,7 +59,7 @@ export const COMPONENTS = [
         width="18px"
         borderRadius="4px"
         border="1px solid black"
-      ></Box>
+      ></Box> // 组合板
     ),
     type: ElectricalComponentType.Board,
     label: "Board",
