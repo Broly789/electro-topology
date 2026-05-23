@@ -7,7 +7,7 @@ import { IconButton } from "@chakra-ui/react";
 import { Download } from "react-bootstrap-icons";
 import { toPng } from "html-to-image";
 import { useCallback, useState } from "react";
-import { useDarkMode } from "@/store/useDarkMode";
+import { useColorMode } from "@/components/ui/color-mode";
 
 // 导出配置（可灵活调整）
 const EXPORT_CONFIG = {
@@ -91,7 +91,8 @@ const DownloadBtn = () => {
     }
   }, [getNodes, loading]);
 
-  const { isDark } = useDarkMode();
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === "dark";
 
   return (
     <IconButton

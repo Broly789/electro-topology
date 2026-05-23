@@ -6,7 +6,6 @@ import { isPointInBox, zoomSelector } from "@/utils";
 import useKeyBinding from "@/hooks/useKeyBinding";
 import { useDarkMode } from "@/store/useDarkMode";
 import { useColorMode } from "@/components/ui/color-mode";
-import { useTheme } from "ahooks";
 
 import {
   ELECTRICAL_COMPONENTS,
@@ -473,20 +472,16 @@ export default function FlowEditor() {
     }
   };
 
-  const { isDark, toggleMode } = useDarkMode();
-  const { setThemeMode } = useTheme();
-
-  const { toggleColorMode, setColorMode, colorMode } = useColorMode();
+  const { colorMode, setColorMode } = useColorMode();
+  const isDark = useDarkMode((state) => state.isDark);
+  const toggleMode = useDarkMode((state) => state.toggleMode);
 
   const toggleDarkMode = () => {
     toggleMode();
-    setThemeMode(colorMode === "dark" ? "light" : "dark");
-    toggleColorMode();
-    console.log("toggleDarkMode", colorMode, isDark);
   };
 
+  // OS 系统切换 或 手动点击 → Zustand isDark 变化 → 同步到 next-themes
   useEffect(() => {
-    console.log("colorMode123", colorMode);
     setColorMode(isDark ? "dark" : "light");
   }, [isDark, setColorMode]);
 
@@ -497,8 +492,6 @@ export default function FlowEditor() {
       border="1px solid black"
       position="relative"
     >
-      <div>{isDark}</div>
-
       {selectedNode && (
         <Flex
           position="absolute"
@@ -551,7 +544,7 @@ export default function FlowEditor() {
         onReconnectEnd={onReconnectEnd}
         onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
-        colorMode={isDark ? "dark" : "light"}
+        colorMode={colorMode}
       >
         <Panel position="top-left">
           {/*<IconButton

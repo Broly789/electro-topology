@@ -1,6 +1,5 @@
-// store/useDarkMode.ts
 import { create } from "zustand";
-import { devtools } from "zustand/middleware"; // 👈 必须引入
+import { devtools } from "zustand/middleware";
 
 interface ThemeState {
   isDark: boolean;
@@ -10,7 +9,7 @@ interface ThemeState {
 
 export const useDarkMode = create<ThemeState, [["zustand/devtools", unknown]]>(
   devtools((set) => ({
-    isDark: false, // 临时默认值，后续由组件同步
+    isDark: false,
     setIsDark: (isDark) => set({ isDark }),
     toggleMode: () => set((state) => ({ isDark: !state.isDark })),
   })),
