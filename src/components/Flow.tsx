@@ -8,9 +8,10 @@ import {
   Controls,
   type Node,
   type Edge,
+  type OnConnect,
   type OnNodesChange,
   type OnEdgesChange,
-  type OnConnect,
+  type EdgeMouseHandler,
   type DefaultEdgeOptions,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -92,6 +93,22 @@ export default function ReactFlowCanvas() {
     [],
   );
 
+  const onEdgeMouseEnter: EdgeMouseHandler = useCallback((_, edge) => {
+    setEdges((edgesSnapshot) =>
+      edgesSnapshot.map((e) =>
+        e.id === edge.id ? { ...e, data: { ...e.data, isHovered: true } } : e,
+      ),
+    );
+  }, []);
+
+  const onEdgeMouseLeave: EdgeMouseHandler = useCallback((_, edge) => {
+    setEdges((edgesSnapshot) =>
+      edgesSnapshot.map((e) =>
+        e.id === edge.id ? { ...e, data: { ...e.data, isHovered: false } } : e,
+      ),
+    );
+  }, []);
+
   return (
     <div style={{ width: "100%", height: "100%" }}>
       <ReactFlow
@@ -104,6 +121,8 @@ export default function ReactFlowCanvas() {
         edgeTypes={edgeComponentsTypes}
         fitView
         defaultEdgeOptions={defaultEdgeOptions}
+        onEdgeMouseEnter={onEdgeMouseEnter}
+        onEdgeMouseLeave={onEdgeMouseLeave}
       >
         <Controls />
         <Background gap={12} size={1} />
