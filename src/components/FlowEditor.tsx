@@ -20,7 +20,6 @@ import {
   ReactFlow,
   applyNodeChanges,
   applyEdgeChanges,
-  addEdge,
   Background,
   Controls,
   BackgroundVariant,
@@ -80,16 +79,7 @@ export default function FlowEditor() {
     // animated: true,
   };
 
-  const {
-    history,
-    addToHistory,
-    undo,
-    redo,
-    addNode,
-    addEdge,
-    removeNode,
-    removeEdge,
-  } = useHistory();
+  const { undo, redo, addNode, addEdge, removeNode, removeEdge } = useHistory();
   const isValidConnection = useCallback((connection: Connection | Edge) => {
     const { source, target } = connection;
     if (source === target) return false;
