@@ -39,4 +39,5 @@ export enum HistoryAction {
   RemoveNode = "removeNode",
   AddEdge = "addEdge",
   RemoveEdge = "removeEdge",
+  BatchDelete = "batchDelete",
 }

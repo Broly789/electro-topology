@@ -9,8 +9,6 @@ import { ElectricalComponentType } from "@/types";
 
 import {
   ReactFlow,
-  applyNodeChanges,
-  applyEdgeChanges,
   Background,
   Controls,
   BackgroundVariant,
@@ -22,8 +20,6 @@ import {
   type Node,
   type Edge,
   type Connection,
-  type OnNodesChange,
-  type OnEdgesChange,
   type OnConnect,
   type DefaultEdgeOptions,
   type ReactFlowInstance,
@@ -71,7 +67,7 @@ export default function FlowEditor() {
   const defaultEdgeOptions: DefaultEdgeOptions = {};
 
   // ── 历史记录 ──
-  const { undo, redo, addNode, addEdge, removeNode, removeEdge } = useHistory();
+  const { undo, redo, addNode, addEdge, batchDelete } = useHistory();
 
   // ── 边重连 ──
   const { onReconnectStart, onReconnect, onReconnectEnd } =
@@ -124,10 +120,9 @@ export default function FlowEditor() {
 
   const handleDelete = useCallback(
     (params: { nodes: Node[]; edges: Edge[] }) => {
-      params.nodes.forEach((node) => removeNode(node));
-      params.edges.forEach((edge) => removeEdge(edge));
+      batchDelete(params.nodes, params.edges);
     },
-    [removeNode, removeEdge],
+    [batchDelete],
   );
 
   useKeyBinding({ undo, redo });
