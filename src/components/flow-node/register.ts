@@ -4,6 +4,9 @@ import PaymentCountry from "./PaymentCountry";
 import PaymentProvider from "./PaymentProvider";
 import PaymentProviderSelect from "./PaymentProviderSelect";
 import CustomEdge from "./CustomEdge";
+import Order from "./Order";
+import PaymentGateway from "./PaymentGateway";
+import { NodeType } from "@/constants/order";
 
 export const nodeComponentsTypes = {
   textUpdater: TextUpdaterNode,
@@ -11,6 +14,8 @@ export const nodeComponentsTypes = {
   paymentCountry: PaymentCountry,
   paymentProvider: PaymentProvider,
   paymentProviderSelect: PaymentProviderSelect,
+  [NodeType.Order]: Order,
+  [NodeType.PaymentGateway]: PaymentGateway,
 };
 
 export const edgeComponentsTypes = {

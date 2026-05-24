@@ -1,4 +1,8 @@
-import { useState, useCallback } from "react";
+import { useRef, useState, useCallback } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import { Flex, Text, IconButton, Spinner } from "@chakra-ui/react";
+import { Floppy } from "react-bootstrap-icons";
+import { v4 as uuid } from "uuid";
 import {
   ReactFlow,
   applyNodeChanges,
@@ -6,6 +10,8 @@ import {
   addEdge,
   Background,
   Controls,
+  Panel,
+  useReactFlow,
   type Node,
   type Edge,
   type OnConnect,
@@ -16,6 +22,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { nodeComponentsTypes, edgeComponentsTypes } from "./flow-node/register";
+import { COMPONENTS, NodeType } from "@/constants/order";
 
 const initialNodes: Node[] = [
   {
@@ -109,24 +116,115 @@ export default function ReactFlowCanvas() {
     );
   }, []);
 
+  const { screenToFlowPosition } = useReactFlow();
+  const dragOutSideRef = useRef<string>();
+
+  const onDragStart = (
+    event: React.DragEvent<HTMLButtonElement>,
+    type: NodeType,
+  ) => {
+    dragOutSideRef.current = type;
+    event.dataTransfer.effectAllowed = "move";
+  };
+  const onDragOver: React.DragEventHandler<HTMLDivElement> = useCallback(
+    (event) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+    },
+    [],
+  );
+  const onDrop: React.DragEventHandler<HTMLDivElement> = useCallback(
+    (event) => {
+      event.preventDefault();
+      const type = dragOutSideRef.current;
+
+      if (!type) {
+        return;
+      }
+
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      const newNode = {
+        id: uuid(),
+        type,
+        position,
+        data: {},
+      };
+
+      setNodes((prevNodes) => [...prevNodes, newNode]);
+    },
+    [screenToFlowPosition, setNodes],
+  );
+  const form = useForm();
+
   return (
     <div style={{ width: "100%", height: "100%" }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        nodeTypes={nodeComponentsTypes}
-        edgeTypes={edgeComponentsTypes}
-        fitView
-        defaultEdgeOptions={defaultEdgeOptions}
-        onEdgeMouseEnter={onEdgeMouseEnter}
-        onEdgeMouseLeave={onEdgeMouseLeave}
-      >
-        <Controls />
-        <Background gap={12} size={1} />
-      </ReactFlow>
+      <FormProvider {...form}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeComponentsTypes}
+          edgeTypes={edgeComponentsTypes}
+          fitView
+          defaultEdgeOptions={defaultEdgeOptions}
+          onEdgeMouseEnter={onEdgeMouseEnter}
+          onEdgeMouseLeave={onEdgeMouseLeave}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+        >
+          <Panel
+            position="top-right"
+            style={{
+              border: "1px solid #ccc",
+              padding: 12,
+              borderRadius: "12px",
+              background: "white",
+              width: 150,
+            }}
+          >
+            <Flex direction="column" gap={3}>
+              <div>
+                <Text fontSize="x-small">Project</Text>
+                <Flex gap={1} mt={1} flexWrap="wrap">
+                  {/*<IconButton
+                    aria-label="Save"
+                    size="xs"
+                    onClick={onSave}
+                  >
+                    {isPending ? <Spinner size="xs" /> : <Floppy />}
+                  </IconButton>*/}
+                </Flex>
+              </div>
+              <div>
+                <Text fontSize="x-small">Components</Text>
+                <Flex gap={1} mt={1} flexWrap="wrap">
+                  {COMPONENTS.map((component) => (
+                    <IconButton
+                      key={component.type}
+                      aria-label={component.label}
+                      size="sm"
+                      onDragStart={(event) =>
+                        onDragStart(event, component.type)
+                      }
+                      draggable
+                    >
+                      {component.icon}
+                    </IconButton>
+                  ))}
+                </Flex>
+              </div>
+            </Flex>
+          </Panel>
+          <Controls />
+          <Background gap={12} size={1} />
+        </ReactFlow>
+      </FormProvider>
     </div>
   );
 }
