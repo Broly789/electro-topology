@@ -17,6 +17,8 @@ import {
   MarkerType,
   Panel,
   useReactFlow,
+  useEdgesState,
+  useNodesState,
   type Node,
   type Edge,
   type Connection,
@@ -64,8 +66,8 @@ const initialNodes: Node[] = [
 const initialEdges: Edge[] = [];
 
 export default function FlowEditor() {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const defaultEdgeOptions: DefaultEdgeOptions = {};
 
   // ── 历史记录 ──
@@ -101,18 +103,6 @@ export default function FlowEditor() {
     const { source, target } = connection;
     return source !== target;
   }, []);
-
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) =>
-      setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
-    [],
-  );
-
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) =>
-      setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
-    [],
-  );
 
   const onConnect: OnConnect = useCallback(
     (params) => {
@@ -158,7 +148,7 @@ export default function FlowEditor() {
         setViewport(viewport);
       });
     }
-  }, [reactFlowState, setViewport]);
+  }, [reactFlowState, setNodes, setEdges, setViewport]);
 
   // ── 保存 ──
   const { mutateAsync: updateData, isPending } = useUpdateData();
