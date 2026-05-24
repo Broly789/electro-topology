@@ -49,6 +49,7 @@ import { Floppy, Sun, Moon } from "react-bootstrap-icons";
 import { useData } from "@/api/useData";
 import { useUpdateData } from "@/api/useUpdateData";
 import DownloadBtn from "@/components/DownloadBtn";
+import useHistory from "@/hooks/useHistory";
 
 const initialNodes: Node[] = [
   {
@@ -79,6 +80,16 @@ export default function FlowEditor() {
     // animated: true,
   };
 
+  const {
+    history,
+    addToHistory,
+    undo,
+    redo,
+    addNode,
+    addEdge,
+    removeNode,
+    removeEdge,
+  } = useHistory();
   const isValidConnection = useCallback((connection: Connection | Edge) => {
     const { source, target } = connection;
     if (source === target) return false;
@@ -99,24 +110,30 @@ export default function FlowEditor() {
   const { screenToFlowPosition, getIntersectingNodes, setViewport } =
     useReactFlow();
   const onConnect: OnConnect = useCallback(
-    (params) =>
-      setEdges((edgesSnapshot) =>
-        addEdge(
-          {
-            ...params,
-            id: uuid(),
-            type: "wire",
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              width: 20,
-              height: 20,
-              color: "#ffc300",
-            },
-          },
-          edgesSnapshot,
-        ),
-      ),
-    [],
+    (params) => {
+      const edge = {
+        ...params,
+        id: uuid(),
+        type: "wire",
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+          color: "#ffc300",
+        },
+      };
+      addEdge(edge);
+    },
+    [addEdge],
+  );
+
+  // React Flow 删除节点/边后触发 → 写入历史记录
+  const handleDelete = useCallback(
+    (params: { nodes: Node[]; edges: Edge[] }) => {
+      params.nodes.forEach((node) => removeNode(node));
+      params.edges.forEach((edge) => removeEdge(edge));
+    },
+    [removeNode, removeEdge],
   );
 
   const dragOutsideRef = useRef<ElectricalComponentKeysType | null>(null);
@@ -219,7 +236,7 @@ export default function FlowEditor() {
     }
 
     if (node) {
-      setNodes((prevNodes) => [...prevNodes, node]);
+      addNode(node);
     }
   };
   const [selectedNode, setSelectedNode] = useState<Node | undefined>(undefined);
@@ -249,7 +266,7 @@ export default function FlowEditor() {
     }
   };
 
-  useKeyBinding();
+  useKeyBinding({ undo, redo });
 
   const showContent = useStore(zoomSelector);
   const [, startTransition] = useTransition();
@@ -506,6 +523,7 @@ export default function FlowEditor() {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onDelete={handleDelete}
         onConnect={onConnect}
         edgeTypes={edgeTypes}
         nodeTypes={nodeTypes}

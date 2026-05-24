@@ -33,3 +33,10 @@ export type ElectricalComponentData = {
   visible?: boolean;
   connectable?: boolean;
 };
+
+export enum HistoryAction {
+  AddNode = "addNode",
+  RemoveNode = "removeNode",
+  AddEdge = "addEdge",
+  RemoveEdge = "removeEdge",
+}

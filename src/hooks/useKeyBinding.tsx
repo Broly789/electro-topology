@@ -2,13 +2,16 @@ import { useKeyPress } from "ahooks";
 import { useReactFlow } from "@xyflow/react";
 import { v4 as uuid } from "uuid";
 
-const useKeyBinding = () => {
+interface UseKeyBindingProps {
+  undo: () => void;
+  redo: () => void;
+}
+
+const useKeyBinding = ({ undo, redo }: UseKeyBindingProps) => {
   const { setNodes, getNodes } = useReactFlow();
 
-  // 1. Delete 键 → 删除选中节点
-  useKeyPress("delete", () => {
-    setNodes((prevNodes) => prevNodes.filter((node) => !node.selected));
-  });
+  useKeyPress("ctrl.z", undo, { exactMatch: true });
+  useKeyPress("ctrl.y", redo, { exactMatch: true });
 
   // 2. Ctrl + D 键 → 复制选中节点
   useKeyPress(
