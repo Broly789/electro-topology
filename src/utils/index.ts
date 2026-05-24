@@ -1,8 +1,10 @@
 import type { ReactFlowState } from "@xyflow/react";
 import { useSyncExternalStore } from "react";
 import {
+  ELECTRICAL_COMPONENTS,
   ElectricalComponentType,
   type ElectricalComponentKeysType,
+  type ElectricalPartialComponentType,
 } from "../types";
 
 export const zoomSelector = (s: ReactFlowState) => s.transform[2] >= 1.2;
@@ -18,6 +20,12 @@ export const isPointInBox = (
     point.y <= box.y + box.height
   );
 };
+
+export function isElectricalComponent(
+  type: ElectricalComponentKeysType | undefined,
+): type is ElectricalPartialComponentType {
+  return ELECTRICAL_COMPONENTS.includes(type as ElectricalPartialComponentType);
+}
 
 export function getUnit(type: ElectricalComponentKeysType) {
   let unit;

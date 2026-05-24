@@ -1,15 +1,10 @@
-import {
-  getNodesBounds,
-  getViewportForBounds,
-  useReactFlow,
-} from "@xyflow/react";
+import { getViewportForBounds, useReactFlow } from "@xyflow/react";
 import { IconButton } from "@chakra-ui/react";
 import { Download } from "react-bootstrap-icons";
 import { toPng } from "html-to-image";
 import { useCallback, useState } from "react";
-import { useDarkMode } from "@/store/useDarkMode";
+import { useColorMode } from "@/components/ui/color-mode";
 
-// 导出配置（可灵活调整）
 const EXPORT_CONFIG = {
   WIDTH: 1024,
   HEIGHT: 768,
@@ -19,14 +14,11 @@ const EXPORT_CONFIG = {
   FILE_NAME: "flow-diagram.png",
 };
 
-// 下载工具函数（增加清理逻辑）
 const downloadImage = (dataUrl: string) => {
   const a = document.createElement("a");
   a.download = EXPORT_CONFIG.FILE_NAME;
   a.href = dataUrl;
   a.click();
-
-  // 清理DOM元素，避免内存泄漏
   setTimeout(() => {
     URL.revokeObjectURL(dataUrl);
     a.remove();
@@ -34,24 +26,21 @@ const downloadImage = (dataUrl: string) => {
 };
 
 const DownloadBtn = () => {
-  const { getNodes } = useReactFlow();
+  const { getNodes, getNodesBounds } = useReactFlow();
   const [loading, setLoading] = useState(false);
-  const { isDark } = useDarkMode();
-  const color = isDark ? "black" : "white";
+  const { colorMode } = useColorMode();
+  const bgColor = colorMode === "dark" ? "#1a1a1a" : "#ffffff";
 
-  // 缓存函数，避免重渲染
   const handleDownload = useCallback(async () => {
-    // 1. 防重复点击
     if (loading) return;
 
     const nodes = getNodes();
-    // 2. 无节点判断
-    if (nodes.length === 0) {
-      return;
-    }
+    if (nodes.length === 0) return;
 
     try {
       setLoading(true);
+
+      // 使用 useReactFlow 导出的 getNodesBounds（内部持有 nodeLookup，支持子节点）
       const nodeBounds = getNodesBounds(nodes);
       const { x, y, zoom } = getViewportForBounds(
         nodeBounds,
@@ -62,7 +51,6 @@ const DownloadBtn = () => {
         EXPORT_CONFIG.DEFAULT_ZOOM,
       );
 
-      // 3. 稳定获取 React Flow 容器（官方推荐的选择器）
       const reactFlowElement = document.querySelector<HTMLDivElement>(
         ".react-flow__viewport",
       );
@@ -70,12 +58,10 @@ const DownloadBtn = () => {
         throw new Error("未找到画布容器");
       }
 
-      // 4. 高清导出配置（核心优化：清晰度）
       const dataUrl = await toPng(reactFlowElement, {
         width: EXPORT_CONFIG.WIDTH,
         height: EXPORT_CONFIG.HEIGHT,
-        // pixelRatio: window.devicePixelRatio * 2, // 高清关键
-        backgroundColor: color, // 白底导出，避免透明背景黑边
+        backgroundColor: bgColor,
         style: {
           width: `${EXPORT_CONFIG.WIDTH}px`,
           height: `${EXPORT_CONFIG.HEIGHT}px`,
@@ -87,20 +73,18 @@ const DownloadBtn = () => {
     } catch (error) {
       console.error("导出画布失败：", error);
     } finally {
-      setTimeout(() => {
-        setLoading(false);
-      }, 800);
+      setTimeout(() => setLoading(false), 800);
     }
-  }, [getNodes, loading, color]);
+  }, [getNodes, getNodesBounds, loading, bgColor]);
 
   return (
     <IconButton
       aria-label="Download Flow"
       size="xs"
-      variant={"subtle"}
+      variant="subtle"
       onClick={handleDownload}
-      loading={loading} // 加载状态
-      disabled={loading} // 加载中禁用
+      loading={loading}
+      disabled={loading}
     >
       <Download />
     </IconButton>
