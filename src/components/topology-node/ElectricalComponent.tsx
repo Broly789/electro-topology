@@ -80,7 +80,8 @@ const ElectricalComponent = ({
         <Inductor color={color} height={24} />
       )}
       <Text fontSize="xx-small" position="absolute">
-        {value} {unit}
+        {value}
+        {unit}
       </Text>
       {isAdditionValid && (
         <Plus

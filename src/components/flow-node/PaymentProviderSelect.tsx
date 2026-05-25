@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Menu, Button } from "@chakra-ui/react";
+import { Box, Menu, Button } from "@chakra-ui/react";
 import { ChevronBarDown } from "react-bootstrap-icons";
 import { useReactFlow } from "@xyflow/react";
 
@@ -32,25 +32,33 @@ export default function PaymentProviderSelect() {
   );
 
   return (
-    <Menu.Root>
-      <Menu.Trigger asChild>
-        <Button variant="outline" size="sm" bg="white">
-          Add Payment Provider <ChevronBarDown />
-        </Button>
-      </Menu.Trigger>
-      <Menu.Positioner>
-        <Menu.Content>
-          {PAYMENT_PROVIDERS.map((provider) => (
-            <Menu.Item
-              value={provider.code}
-              onClick={() => onProviderClick(provider)}
-              key={provider.code}
-            >
-              {provider.name}
-            </Menu.Item>
-          ))}
-        </Menu.Content>
-      </Menu.Positioner>
-    </Menu.Root>
+    <Box className="nowheel">
+      <Menu.Root lazyMount>
+        <Menu.Trigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            bg="white"
+            className="nodrag"
+            css={{ cursor: "pointer" }}
+          >
+            Add Payment Provider <ChevronBarDown />
+          </Button>
+        </Menu.Trigger>
+        <Menu.Positioner>
+          <Menu.Content>
+            {PAYMENT_PROVIDERS.map((provider) => (
+              <Menu.Item
+                value={provider.code}
+                onClick={() => onProviderClick(provider)}
+                key={provider.code}
+              >
+                {provider.name}
+              </Menu.Item>
+            ))}
+          </Menu.Content>
+        </Menu.Positioner>
+      </Menu.Root>
+    </Box>
   );
 }

@@ -1,4 +1,5 @@
 import { Flex, IconButton, Text } from "@chakra-ui/react";
+import React from "react";
 import { Panel } from "@xyflow/react";
 import { COMPONENTS } from "@/constants";
 import type { ElectricalComponentKeysType } from "@/types";
@@ -12,7 +13,11 @@ interface ThemeToggleProps {
 }
 
 /** 深色主题切换按钮 */
-export function ThemeToggle({ isDark, colorMode, onToggle }: ThemeToggleProps) {
+export const ThemeToggle = React.memo(function ThemeToggle({
+  isDark,
+  colorMode,
+  onToggle,
+}: ThemeToggleProps) {
   return (
     <Panel position="top-left">
       <IconButton
@@ -25,7 +30,7 @@ export function ThemeToggle({ isDark, colorMode, onToggle }: ThemeToggleProps) {
       </IconButton>
     </Panel>
   );
-}
+});
 
 interface ProjectPanelProps {
   onSave: () => void;
@@ -33,7 +38,10 @@ interface ProjectPanelProps {
 }
 
 /** 保存 + 下载 */
-export function ProjectPanel({ onSave, isPending }: ProjectPanelProps) {
+export const ProjectPanel = React.memo(function ProjectPanel({
+  onSave,
+  isPending,
+}: ProjectPanelProps) {
   return (
     <div>
       <Text fontSize="sm">Project</Text>
@@ -51,7 +59,7 @@ export function ProjectPanel({ onSave, isPending }: ProjectPanelProps) {
       </Flex>
     </div>
   );
-}
+});
 
 interface ComponentsPanelProps {
   onDragStart: (
@@ -61,7 +69,9 @@ interface ComponentsPanelProps {
 }
 
 /** 可拖拽的元件列表 */
-export function ComponentsPanel({ onDragStart }: ComponentsPanelProps) {
+export const ComponentsPanel = React.memo(function ComponentsPanel({
+  onDragStart,
+}: ComponentsPanelProps) {
   return (
     <div>
       <Text fontSize="sm">Components</Text>
@@ -81,4 +91,4 @@ export function ComponentsPanel({ onDragStart }: ComponentsPanelProps) {
       </Flex>
     </div>
   );
-}
+});

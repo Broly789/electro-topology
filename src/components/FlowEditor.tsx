@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect, useTransition } from "react";
 import { Box, Flex } from "@chakra-ui/react";
-import ComponentDetail from "./ComponentDetail";
 import useKeyBinding from "@/hooks/useKeyBinding";
 import { useDarkMode } from "@/store/useDarkMode";
 import { useColorMode } from "@/components/ui/color-mode";
@@ -37,6 +36,7 @@ import { useDragDrop } from "@/hooks/useDragDrop";
 import { useNodeAdsorption } from "@/hooks/useNodeAdsorption";
 import { useZoomVisibility } from "@/hooks/useZoomVisibility";
 import { ThemeToggle, ProjectPanel, ComponentsPanel } from "./EditorPanels";
+import SelectedNodePanel from "./SelectedNodePanel";
 
 const initialNodes: Node[] = [
   {
@@ -170,35 +170,14 @@ export default function FlowEditor() {
       position="relative"
     >
       {selectedNode && (
-        <Flex
-          position="absolute"
-          top={0}
-          left={0}
-          width="150px"
-          height="100%"
-          alignItems="center"
-          marginLeft="12px"
-          bg="transparent"
-        >
-          <Box
-            position="relative"
-            width="100%"
-            bg="white"
-            height="150px"
-            border="1px solid #ccc"
-            borderRadius="12px"
-            marginBottom="50px"
-            padding="12px"
-            zIndex={1000}
-          >
-            <ComponentDetail isDark node={selectedNode} key={selectedNode.id} />
-          </Box>
-        </Flex>
+        <SelectedNodePanel isDark={isDark} node={selectedNode} />
       )}
       <ReactFlow
         onInit={setRfInstance}
         nodes={nodes}
         edges={edges}
+        fitView
+        onlyRenderVisibleElements
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onDelete={handleDelete}
@@ -206,7 +185,6 @@ export default function FlowEditor() {
         edgeTypes={edgeTypes}
         nodeTypes={nodeTypes}
         connectionLineComponent={ConnectionLine}
-        fitView
         defaultEdgeOptions={defaultEdgeOptions}
         proOptions={{ hideAttribution: true }}
         isValidConnection={isValidConnection}
@@ -220,6 +198,8 @@ export default function FlowEditor() {
         onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
         colorMode={colorMode}
+        snapToGrid
+        snapGrid={[50, 50]}
       >
         <ThemeToggle
           isDark={isDark}
