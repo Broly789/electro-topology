@@ -1,12 +1,10 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useCallback } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Flex, Text, IconButton, Spinner } from "@chakra-ui/react";
 import { Floppy } from "react-bootstrap-icons";
 import { v4 as uuid } from "uuid";
 import {
   ReactFlow,
-  applyNodeChanges,
-  applyEdgeChanges,
   addEdge,
   Background,
   Controls,
@@ -17,12 +15,9 @@ import {
   type Node,
   type Edge,
   type OnConnect,
-  type OnNodesChange,
-  type OnEdgesChange,
   type EdgeMouseHandler,
   type DefaultEdgeOptions,
 } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
 import { nodeComponentsTypes, edgeComponentsTypes } from "./flow-node/register";
 import { COMPONENTS, NodeType } from "@/constants/order";
 

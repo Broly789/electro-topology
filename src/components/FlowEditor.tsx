@@ -28,7 +28,6 @@ import ConnectionLine from "@/components/topology-node/ConnectionLine";
 import { v4 as uuid } from "uuid";
 
 import { nodeTypes, edgeTypes } from "./topology-node/register";
-import "@xyflow/react/dist/style.css";
 import { useData } from "@/api/useData";
 import { useUpdateData } from "@/api/useUpdateData";
 import useHistory from "@/hooks/useHistory";

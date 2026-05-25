@@ -66,6 +66,16 @@ export default function RootLayout() {
             编辑器
           </NavLink>{" "}
           <NavLink
+            to="/visualizer"
+            style={({ isActive }) => ({
+              color: isActive ? "#ff4d4f" : "white",
+              fontWeight: isActive ? "bold" : "normal",
+              textDecoration: "none",
+            })}
+          >
+            可视化工具
+          </NavLink>{" "}
+          <NavLink
             to="/list"
             style={({ isActive }) => ({
               color: isActive ? "#ff4d4f" : "white",
