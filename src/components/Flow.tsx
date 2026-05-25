@@ -12,6 +12,8 @@ import {
   Controls,
   Panel,
   useReactFlow,
+  useNodesState,
+  useEdgesState,
   type Node,
   type Edge,
   type OnConnect,
@@ -77,21 +79,12 @@ const initialNodes: Node[] = [
 const initialEdges: Edge[] = [{ id: "n1-n2", source: "n1", target: "n2" }];
 
 export default function ReactFlowCanvas() {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const defaultEdgeOptions: DefaultEdgeOptions = {
     animated: true,
   };
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) =>
-      setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
-    [],
-  );
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) =>
-      setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
-    [],
-  );
+
   const onConnect: OnConnect = useCallback(
     (params) =>
       setEdges((edgesSnapshot) =>
@@ -117,7 +110,7 @@ export default function ReactFlowCanvas() {
   }, []);
 
   const { screenToFlowPosition } = useReactFlow();
-  const dragOutSideRef = useRef<string>();
+  const dragOutSideRef = useRef<string>(null);
 
   const onDragStart = (
     event: React.DragEvent<HTMLButtonElement>,
